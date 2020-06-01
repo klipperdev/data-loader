@@ -15,9 +15,9 @@
         "php": "^7.4.0"
     },
     "require-dev": {
-        "symfony/yaml": "^4.4.0",
-        "symfony/config": "^4.4.0",
-        "symfony/validator": "^4.4.0",
+        "symfony/yaml": "^5.1.0",
+        "symfony/config": "^5.1.0",
+        "symfony/validator": "^5.1.0",
         "klipper/resource": "^2.0.0",
         "klipper/model": "^2.0.0",
         "klipper/doctrine-extensions-extra": "^2.0.0"
