@@ -22,23 +22,14 @@ use Symfony\Component\Yaml\Yaml;
  */
 trait YamlLoaderTrait
 {
-    /**
-     * @var null|YamlParser
-     */
-    protected $yamlParser;
+    protected ?YamlParser $yamlParser = null;
 
-    /**
-     * {@inheritdoc}
-     */
     public function supports($resource): bool
     {
         return \is_string($resource)
             && \in_array(pathinfo($resource, PATHINFO_EXTENSION), ['yml', 'yaml'], true);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function loadContent($resource): array
     {
         if (!class_exists(YamlParser::class)) {

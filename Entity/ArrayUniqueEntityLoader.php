@@ -16,17 +16,11 @@ namespace Klipper\Component\DataLoader\Entity;
  */
 class ArrayUniqueEntityLoader extends BaseUniqueEntityLoader
 {
-    /**
-     * {@inheritdoc}
-     */
     public function supports($resource): bool
     {
         return \is_array($resource) && !empty($resource);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function loadContent($resource): array
     {
         return (array) $resource;

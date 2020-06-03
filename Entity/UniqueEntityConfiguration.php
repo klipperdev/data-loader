@@ -11,9 +11,9 @@
 
 namespace Klipper\Component\DataLoader\Entity;
 
-use Doctrine\Common\Persistence\Mapping\ClassMetadata;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\Mapping\ClassMetadataInfo;
+use Doctrine\Persistence\Mapping\ClassMetadata;
 use Klipper\Component\DoctrineExtensionsExtra\Model\Traits\TranslatableInterface;
 use Klipper\Component\Resource\Domain\DomainInterface;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
@@ -26,30 +26,19 @@ use Symfony\Component\Config\Definition\ConfigurationInterface;
  */
 class UniqueEntityConfiguration implements ConfigurationInterface
 {
-    /**
-     * @var DomainInterface
-     */
-    protected $domain;
+    protected DomainInterface $domain;
 
     /**
      * @var ClassMetadata|ClassMetadataInfo
      */
-    protected $metadata;
+    protected ClassMetadata $metadata;
 
-    /**
-     * Constructor.
-     *
-     * @param DomainInterface $domain The domain
-     */
     public function __construct(DomainInterface $domain)
     {
         $this->domain = $domain;
         $this->metadata = $domain->getObjectManager()->getClassMetadata($domain->getClass());
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getConfigTreeBuilder(): TreeBuilder
     {
         $treeBuilder = new TreeBuilder('entities');

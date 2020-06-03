@@ -12,9 +12,9 @@
 namespace Klipper\Component\DataLoader\Entity;
 
 use Doctrine\Common\Collections\Collection;
-use Doctrine\Common\Persistence\Mapping\ClassMetadata;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\Mapping\ClassMetadataInfo;
+use Doctrine\Persistence\Mapping\ClassMetadata;
 use Klipper\Component\DataLoader\DataLoaderInterface;
 use Klipper\Component\DataLoader\Exception\ConsoleResourceException;
 use Klipper\Component\DataLoader\Exception\InvalidArgumentException;
@@ -34,49 +34,26 @@ use Symfony\Component\PropertyAccess\PropertyAccessor;
  */
 abstract class BaseUniqueEntityLoader implements DataLoaderInterface
 {
-    /**
-     * @var DomainInterface
-     */
-    protected $domain;
+    protected DomainInterface $domain;
 
     /**
      * @var ClassMetadata|ClassMetadataInfo
      */
-    protected $metadata;
+    protected ClassMetadata $metadata;
+
+    protected ConfigurationInterface $config;
+
+    protected Processor $processor;
+
+    protected string $defaultLocale;
+
+    protected PropertyAccessor $accessor;
+
+    protected bool $hasNewEntities = false;
+
+    protected bool $hasUpdatedEntities = false;
 
     /**
-     * @var ConfigurationInterface
-     */
-    protected $config;
-
-    /**
-     * @var Processor
-     */
-    protected $processor;
-
-    /**
-     * @var string
-     */
-    protected $defaultLocale;
-
-    /**
-     * @var PropertyAccessor
-     */
-    protected $accessor;
-
-    /**
-     * @var bool
-     */
-    protected $hasNewEntities = false;
-
-    /**
-     * @var bool
-     */
-    protected $hasUpdatedEntities = false;
-
-    /**
-     * Constructor.
-     *
      * @param DomainInterface                $domain        The resource domain of entity
      * @param null|UniqueEntityConfiguration $config        The amenity configuration
      * @param Processor                      $processor     The processor
@@ -92,15 +69,12 @@ abstract class BaseUniqueEntityLoader implements DataLoaderInterface
     ) {
         $this->domain = $domain;
         $this->metadata = $domain->getObjectManager()->getClassMetadata($domain->getClass());
-        $this->config = $config ?: new UniqueEntityConfiguration($domain);
-        $this->processor = $processor ?: new Processor();
+        $this->config = $config ?? new UniqueEntityConfiguration($domain);
+        $this->processor = $processor ?? new Processor();
         $this->defaultLocale = $defaultLocale;
-        $this->accessor = $accessor ?: PropertyAccess::createPropertyAccessor();
+        $this->accessor = $accessor ?? PropertyAccess::createPropertyAccessor();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function load($resource): void
     {
         if (!$this->supports($resource)) {

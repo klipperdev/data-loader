@@ -26,17 +26,13 @@ use Symfony\Component\Validator\ConstraintViolationListInterface;
 class ConsoleResourceException extends RuntimeException
 {
     /**
-     * Constructor.
-     *
      * @param ResourceInterface|ResourceListInterface $resource
-     * @param string                                  $propertyPath
-     * @param int                                     $code
      */
     public function __construct(
         $resource,
-        $propertyPath = 'id',
-        $code = 0,
-        \Exception $previous = null
+        string $propertyPath = 'id',
+        int $code = 0,
+        \Throwable $previous = null
     ) {
         $message = '';
 

@@ -23,7 +23,7 @@ interface DataLoaderInterface
      *
      * @param mixed $resource The resource
      *
-     * @throws \Exception If something went wrong
+     * @throws \Throwable If something went wrong
      */
     public function load($resource);
 
