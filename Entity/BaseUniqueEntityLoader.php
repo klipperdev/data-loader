@@ -12,7 +12,7 @@
 namespace Klipper\Component\DataLoader\Entity;
 
 use Doctrine\Common\Collections\Collection;
-use Doctrine\DBAL\Types\Type;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping\ClassMetadataInfo;
 use Doctrine\Persistence\Mapping\ClassMetadata;
 use Klipper\Component\DataLoader\DataLoaderInterface;
@@ -207,10 +207,14 @@ abstract class BaseUniqueEntityLoader implements DataLoaderInterface
                 $itemValue = $item[$fieldName];
 
                 switch ($type) {
-                    case Type::DATETIME:
-                    case Type::DATETIMETZ:
-                    case Type::DATE:
-                    case Type::TIME:
+                    case Types::DATETIME_MUTABLE:
+                    case Types::DATETIME_IMMUTABLE:
+                    case Types::DATETIMETZ_MUTABLE:
+                    case Types::DATETIMETZ_IMMUTABLE:
+                    case Types::DATE_MUTABLE:
+                    case Types::DATE_IMMUTABLE:
+                    case Types::TIME_MUTABLE:
+                    case Types::TIME_IMMUTABLE:
                         $itemValue = null !== $itemValue ? new \DateTime($itemValue) : $itemValue;
 
                         if ($itemValue instanceof \DateTime) {

@@ -11,7 +11,7 @@
 
 namespace Klipper\Component\DataLoader\Entity;
 
-use Doctrine\DBAL\Types\Type;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping\ClassMetadataInfo;
 use Doctrine\Persistence\Mapping\ClassMetadata;
 use Klipper\Component\DoctrineExtensionsExtra\Model\Traits\TranslatableInterface;
@@ -77,24 +77,24 @@ class UniqueEntityConfiguration implements ConfigurationInterface
         $type = $this->metadata->getTypeOfField($fieldName);
 
         switch ($type) {
-            case Type::BOOLEAN:
+            case Types::BOOLEAN:
                 $children->booleanNode($fieldName)->end();
 
                 break;
-            case Type::FLOAT:
-            case Type::DECIMAL:
+            case Types::FLOAT:
+            case Types::DECIMAL:
                 $children->floatNode($fieldName)->end();
 
                 break;
-            case Type::BIGINT:
-            case Type::SMALLINT:
-            case Type::INTEGER:
+            case Types::BIGINT:
+            case Types::SMALLINT:
+            case Types::INTEGER:
                 $children->integerNode($fieldName)->end();
 
                 break;
-            case Type::TARRAY:
-            case Type::SIMPLE_ARRAY:
-            case Type::JSON_ARRAY:
+            case Types::ARRAY:
+            case Types::SIMPLE_ARRAY:
+            case Types::JSON_ARRAY:
                 $children
                     ->arrayNode($fieldName)
                     ->prototype('scalar')->end()
@@ -102,16 +102,20 @@ class UniqueEntityConfiguration implements ConfigurationInterface
                 ;
 
                 break;
-            case Type::DATETIME:
-            case Type::DATETIMETZ:
-            case Type::DATE:
-            case Type::TIME:
-            case Type::OBJECT:
-            case Type::STRING:
-            case Type::TEXT:
-            case Type::BINARY:
-            case Type::BLOB:
-            case Type::GUID:
+            case Types::DATETIME_MUTABLE:
+            case Types::DATETIME_IMMUTABLE:
+            case Types::DATETIMETZ_MUTABLE:
+            case Types::DATETIMETZ_IMMUTABLE:
+            case Types::DATE_MUTABLE:
+            case Types::DATE_IMMUTABLE:
+            case Types::TIME_MUTABLE:
+            case Types::TIME_IMMUTABLE:
+            case Types::OBJECT:
+            case Types::STRING:
+            case Types::TEXT:
+            case Types::BINARY:
+            case Types::BLOB:
+            case Types::GUID:
             default:
                 $children->scalarNode($fieldName)->end();
 
