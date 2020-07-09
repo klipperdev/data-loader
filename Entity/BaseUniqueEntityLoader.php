@@ -14,6 +14,7 @@ namespace Klipper\Component\DataLoader\Entity;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping\ClassMetadataInfo;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\Mapping\ClassMetadata;
 use Klipper\Component\DataLoader\DataLoaderInterface;
 use Klipper\Component\DataLoader\Exception\InvalidArgumentException;
@@ -35,6 +36,10 @@ abstract class BaseUniqueEntityLoader implements DataLoaderInterface
 {
     protected DomainInterface $domain;
 
+    protected string $uniquePropertyPath;
+
+    protected ?QueryBuilder $existingEntitiesQueryBuilder;
+
     /**
      * @var ClassMetadata|ClassMetadataInfo
      */
@@ -53,20 +58,25 @@ abstract class BaseUniqueEntityLoader implements DataLoaderInterface
     protected bool $hasUpdatedEntities = false;
 
     /**
-     * @param DomainInterface                $domain        The resource domain of entity
-     * @param null|UniqueEntityConfiguration $config        The amenity configuration
-     * @param Processor                      $processor     The processor
-     * @param string                         $defaultLocale The default locale
-     * @param null|PropertyAccessor          $accessor      The property accessor
+     * @param DomainInterface                $domain             The resource domain of entity
+     * @param string                         $uniquePropertyPath The property path of unique property
+     * @param null|UniqueEntityConfiguration $config             The configuration
+     * @param Processor                      $processor          The processor
+     * @param string                         $defaultLocale      The default locale
+     * @param null|PropertyAccessor          $accessor           The property accessor
      */
     public function __construct(
         DomainInterface $domain,
+        string $uniquePropertyPath,
+        ?QueryBuilder $existingEntitiesQueryBuilder = null,
         UniqueEntityConfiguration $config = null,
         Processor $processor = null,
         string $defaultLocale = 'en',
         PropertyAccessor $accessor = null
     ) {
         $this->domain = $domain;
+        $this->uniquePropertyPath = $uniquePropertyPath;
+        $this->existingEntitiesQueryBuilder = $existingEntitiesQueryBuilder;
         $this->metadata = $domain->getObjectManager()->getClassMetadata($domain->getClass());
         $this->config = $config ?? new UniqueEntityConfiguration($domain);
         $this->processor = $processor ?? new Processor();
@@ -96,6 +106,13 @@ abstract class BaseUniqueEntityLoader implements DataLoaderInterface
     public function hasUpdatedEntities(): bool
     {
         return $this->hasUpdatedEntities;
+    }
+
+    public function setDefaultLocale(string $defaultLocale): self
+    {
+        $this->defaultLocale = $defaultLocale;
+
+        return $this;
     }
 
     /**
@@ -151,7 +168,7 @@ abstract class BaseUniqueEntityLoader implements DataLoaderInterface
 
         if (!isset($entities[$itemUniqueValue])) {
             $entity = $this->newInstance($item);
-            $entity->setName($itemUniqueValue);
+            $this->setUniqueValue($entity, $itemUniqueValue);
 
             if ($entity instanceof TranslatableInterface) {
                 $entity->setAvailableLocales([$this->defaultLocale]);
@@ -314,21 +331,60 @@ abstract class BaseUniqueEntityLoader implements DataLoaderInterface
         return \in_array(TranslatableInterface::class, class_implements($this->metadata->getName()), true);
     }
 
-    /**
-     * Load the resource content.
-     *
-     * @param mixed $resource The resource
-     */
-    abstract protected function loadContent($resource): array;
+    protected function getSourceUniqueValue(array $item): string
+    {
+        return $this->accessor->getValue($item, '['.$this->uniquePropertyPath.']');
+    }
 
-    abstract protected function getSourceUniqueValue(array $item): string;
+    protected function setUniqueValue(object $entity, $value): void
+    {
+        $this->accessor->setValue($entity, $this->uniquePropertyPath, $value);
+    }
 
-    abstract protected function getUniqueValue(object $entity): string;
+    protected function getUniqueValue(object $entity): string
+    {
+        return $this->accessor->getValue($entity, $this->uniquePropertyPath);
+    }
 
     /**
      * @param $items array[]
      *
      * @return object[]
      */
-    abstract protected function getExistingEntities(array $items): array;
+    protected function getExistingEntities(array $items): array
+    {
+        $qb = $this->createExistingEntitiesQueryBuilder();
+        $alias = $qb->getRootAliases()[0];
+        $qb->andWhere($alias.'.'.$this->uniquePropertyPath.' in (:uniqueValues)');
+        $qb->setParameter('uniqueValues', $this->getSourceUniqueValues($items));
+
+        return $qb->getQuery()->getResult();
+    }
+
+    protected function createExistingEntitiesQueryBuilder(): QueryBuilder
+    {
+        if (null !== $this->existingEntitiesQueryBuilder) {
+            return clone $this->existingEntitiesQueryBuilder;
+        }
+
+        return $this->domain->createQueryBuilder();
+    }
+
+    protected function getSourceUniqueValues(array $items): array
+    {
+        $values = [];
+
+        foreach ($items as $item) {
+            $values[] = $this->getSourceUniqueValue($item);
+        }
+
+        return $values;
+    }
+
+    /**
+     * Load the resource content.
+     *
+     * @param mixed $resource The resource
+     */
+    abstract protected function loadContent($resource): array;
 }
