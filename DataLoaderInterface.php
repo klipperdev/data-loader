@@ -11,6 +11,8 @@
 
 namespace Klipper\Component\DataLoader;
 
+use Klipper\Component\Resource\ResourceListInterface;
+
 /**
  * Data loader interface.
  *
@@ -22,10 +24,8 @@ interface DataLoaderInterface
      * Loads a resource.
      *
      * @param mixed $resource The resource
-     *
-     * @throws \Throwable If something went wrong
      */
-    public function load($resource);
+    public function load($resource): ResourceListInterface;
 
     /**
      * Returns whether this class supports the given resource.

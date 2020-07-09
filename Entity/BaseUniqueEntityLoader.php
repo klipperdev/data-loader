@@ -16,12 +16,13 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping\ClassMetadataInfo;
 use Doctrine\Persistence\Mapping\ClassMetadata;
 use Klipper\Component\DataLoader\DataLoaderInterface;
-use Klipper\Component\DataLoader\Exception\ConsoleResourceException;
 use Klipper\Component\DataLoader\Exception\InvalidArgumentException;
 use Klipper\Component\DataLoader\Exception\RuntimeException;
 use Klipper\Component\DoctrineExtensionsExtra\Model\BaseTranslation;
 use Klipper\Component\DoctrineExtensionsExtra\Model\Traits\TranslatableInterface;
 use Klipper\Component\Resource\Domain\DomainInterface;
+use Klipper\Component\Resource\ResourceList;
+use Klipper\Component\Resource\ResourceListInterface;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 use Symfony\Component\Config\Definition\Processor;
 use Symfony\Component\PropertyAccess\PropertyAccess;
@@ -73,16 +74,12 @@ abstract class BaseUniqueEntityLoader implements DataLoaderInterface
         $this->accessor = $accessor ?? PropertyAccess::createPropertyAccessor();
     }
 
-    public function load($resource): void
+    public function load($resource): ResourceListInterface
     {
-        if (!$this->supports($resource)) {
-            throw new InvalidArgumentException('The resource is not supported by this data loader');
-        }
-
         $content = $this->loadContent($resource);
         $items = $this->processor->processConfiguration($this->config, [$content]);
 
-        $this->doLoad($items);
+        return $this->doLoad($items);
     }
 
     /**
@@ -112,18 +109,11 @@ abstract class BaseUniqueEntityLoader implements DataLoaderInterface
     }
 
     /**
-     * Load the resource content.
-     *
-     * @param mixed $resource The resource
-     */
-    abstract protected function loadContent($resource): array;
-
-    /**
      * Action to load the config of entities in doctrine.
      *
      * @param array $items The items
      */
-    protected function doLoad(array $items): void
+    protected function doLoad(array $items): ResourceListInterface
     {
         $list = $this->getExistingEntities($items);
         /** @var object[] $entities */
@@ -141,12 +131,10 @@ abstract class BaseUniqueEntityLoader implements DataLoaderInterface
 
         // upsert entities
         if (\count($upsertEntities) > 0) {
-            $res = $this->domain->upserts($upsertEntities, true);
-
-            if ($res->hasErrors()) {
-                throw new ConsoleResourceException($res, 'name');
-            }
+            return $this->domain->upserts($upsertEntities, true);
         }
+
+        return new ResourceList();
     }
 
     /**
@@ -325,6 +313,13 @@ abstract class BaseUniqueEntityLoader implements DataLoaderInterface
     {
         return \in_array(TranslatableInterface::class, class_implements($this->metadata->getName()), true);
     }
+
+    /**
+     * Load the resource content.
+     *
+     * @param mixed $resource The resource
+     */
+    abstract protected function loadContent($resource): array;
 
     abstract protected function getSourceUniqueValue(array $item): string;
 
