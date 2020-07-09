@@ -137,9 +137,6 @@ class UniqueEntityConfiguration implements ConfigurationInterface
 
         switch ($mapping['type']) {
             case ClassMetadataInfo::ONE_TO_ONE:
-                $this->addAssociationCriteria($children, $associationName);
-
-                break;
             case ClassMetadataInfo::MANY_TO_ONE:
                 $this->addAssociationCriteria($children, $associationName);
 

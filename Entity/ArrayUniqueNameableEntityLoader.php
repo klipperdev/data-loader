@@ -11,12 +11,18 @@
 
 namespace Klipper\Component\DataLoader\Entity;
 
-use Klipper\Component\DataLoader\Traits\YamlLoaderTrait;
-
 /**
  * @author François Pluchino <francois.pluchino@klipper.dev>
  */
-class YamlUniqueEntityLoader extends BaseUniqueEntityLoader
+class ArrayUniqueNameableEntityLoader extends BaseUniqueNameableEntityLoader
 {
-    use YamlLoaderTrait;
+    public function supports($resource): bool
+    {
+        return \is_array($resource) && !empty($resource);
+    }
+
+    protected function loadContent($resource): array
+    {
+        return (array) $resource;
+    }
 }

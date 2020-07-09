@@ -21,9 +21,7 @@ use Klipper\Component\DataLoader\Exception\InvalidArgumentException;
 use Klipper\Component\DataLoader\Exception\RuntimeException;
 use Klipper\Component\DoctrineExtensionsExtra\Model\BaseTranslation;
 use Klipper\Component\DoctrineExtensionsExtra\Model\Traits\TranslatableInterface;
-use Klipper\Component\Model\Traits\NameableInterface;
 use Klipper\Component\Resource\Domain\DomainInterface;
-use Klipper\Component\Security\Model\Traits\OrganizationalInterface;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 use Symfony\Component\Config\Definition\Processor;
 use Symfony\Component\PropertyAccess\PropertyAccess;
@@ -125,25 +123,16 @@ abstract class BaseUniqueEntityLoader implements DataLoaderInterface
      *
      * @param array $items The items
      */
-    private function doLoad(array $items): void
+    protected function doLoad(array $items): void
     {
-        if (!\in_array(OrganizationalInterface::class, class_implements($this->domain->getClass()), true)) {
-            throw new InvalidArgumentException(sprintf('The "%s" class must implemented "%s"', $this->domain->getClass(), OrganizationalInterface::class));
-        }
-
-        if (!\in_array(NameableInterface::class, class_implements($this->domain->getClass()), true)) {
-            throw new InvalidArgumentException(sprintf('The "%s" class must implemented "%s"', $this->domain->getClass(), NameableInterface::class));
-        }
-
-        /** @var NameableInterface[] $list */
-        $list = $this->domain->getRepository()->findBy(['organization' => null]);
-        /** @var NameableInterface[] $entities */
+        $list = $this->getExistingEntities($items);
+        /** @var object[] $entities */
         $entities = [];
-        /** @var NameableInterface[] $upsertEntities */
+        /** @var object[] $upsertEntities */
         $upsertEntities = [];
 
         foreach ($list as $entity) {
-            $entities[$entity->getName()] = $entity;
+            $entities[$this->getUniqueValue($entity)] = $entity;
         }
 
         foreach ($items as $item) {
@@ -163,27 +152,27 @@ abstract class BaseUniqueEntityLoader implements DataLoaderInterface
     /**
      * Find and attach entity in the map entities.
      *
-     * @param array|NameableInterface[] $upsertEntities The map of upserted entities (by reference)
-     * @param array|NameableInterface[] $entities       The map of entities in database
-     * @param array                     $item           The item
+     * @param array|object[] $upsertEntities The map of upserted entities (by reference)
+     * @param array|object[] $entities       The map of entities in database
+     * @param array          $item           The item
      */
-    private function convertToEntity(array &$upsertEntities, array $entities, array $item): void
+    protected function convertToEntity(array &$upsertEntities, array $entities, array $item): void
     {
-        $itemName = $item['name'];
+        $itemUniqueValue = $this->getSourceUniqueValue($item);
         $newEntity = false;
 
-        if (!isset($entities[$itemName])) {
+        if (!isset($entities[$itemUniqueValue])) {
             $entity = $this->newInstance($item);
-            $entity->setName($itemName);
+            $entity->setName($itemUniqueValue);
 
             if ($entity instanceof TranslatableInterface) {
                 $entity->setAvailableLocales([$this->defaultLocale]);
             }
 
-            $upsertEntities[$itemName] = $entity;
+            $upsertEntities[$itemUniqueValue] = $entity;
             $this->hasNewEntities = true;
         } else {
-            $entity = $entities[$itemName];
+            $entity = $entities[$itemUniqueValue];
         }
 
         $this->mapProperties($upsertEntities, $entities, $entity, $item, $newEntity);
@@ -194,7 +183,7 @@ abstract class BaseUniqueEntityLoader implements DataLoaderInterface
      *
      * @throws
      */
-    private function mapProperties(array &$upsertEntities, array $entities, NameableInterface $entity, array $item, $newEntity = false): void
+    protected function mapProperties(array &$upsertEntities, array $entities, object $entity, array $item, $newEntity = false): void
     {
         /** @var BaseTranslation[] $translations */
         $translations = [];
@@ -321,9 +310,10 @@ abstract class BaseUniqueEntityLoader implements DataLoaderInterface
 
         if ($edited) {
             $this->hasUpdatedEntities = true;
+            $uniqueValue = $this->getUniqueValue($entity);
 
-            if (!isset($upsertEntities[$entity->getName()])) {
-                $upsertEntities[$entity->getName()] = $entity;
+            if (!isset($upsertEntities[$uniqueValue])) {
+                $upsertEntities[$uniqueValue] = $entity;
             }
         }
     }
@@ -331,8 +321,19 @@ abstract class BaseUniqueEntityLoader implements DataLoaderInterface
     /**
      * Check if the entity is translatable.
      */
-    private function isTranslatable(): bool
+    protected function isTranslatable(): bool
     {
         return \in_array(TranslatableInterface::class, class_implements($this->metadata->getName()), true);
     }
+
+    abstract protected function getSourceUniqueValue(array $item): string;
+
+    abstract protected function getUniqueValue(object $entity): string;
+
+    /**
+     * @param $items array[]
+     *
+     * @return object[]
+     */
+    abstract protected function getExistingEntities(array $items): array;
 }
