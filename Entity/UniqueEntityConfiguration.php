@@ -111,7 +111,8 @@ class UniqueEntityConfiguration implements ConfigurationInterface
             case Types::JSON:
                 $children
                     ->arrayNode($fieldName)
-                    ->prototype('variable')->end()
+                    ->normalizeKeys(false)
+                    ->variablePrototype()->end()
                     ->end()
                 ;
 
