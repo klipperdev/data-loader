@@ -39,6 +39,8 @@ abstract class BaseUniqueEntityLoader implements DataLoaderInterface
 
     protected string $uniquePropertyPath;
 
+    protected string $sourceUniquePropertyPath;
+
     protected ?QueryBuilder $existingEntitiesQueryBuilder;
 
     /**
@@ -69,6 +71,7 @@ abstract class BaseUniqueEntityLoader implements DataLoaderInterface
     public function __construct(
         DomainInterface $domain,
         string $uniquePropertyPath,
+        string $sourceUniquePropertyPath,
         ?QueryBuilder $existingEntitiesQueryBuilder = null,
         UniqueEntityConfiguration $config = null,
         Processor $processor = null,
@@ -77,6 +80,7 @@ abstract class BaseUniqueEntityLoader implements DataLoaderInterface
     ) {
         $this->domain = $domain;
         $this->uniquePropertyPath = $uniquePropertyPath;
+        $this->sourceUniquePropertyPath = $sourceUniquePropertyPath;
         $this->existingEntitiesQueryBuilder = $existingEntitiesQueryBuilder;
         $this->metadata = $domain->getObjectManager()->getClassMetadata($domain->getClass());
         $this->config = $config ?? new UniqueEntityConfiguration($domain, $this->uniquePropertyPath);
@@ -376,7 +380,7 @@ abstract class BaseUniqueEntityLoader implements DataLoaderInterface
 
     protected function getSourceUniqueValue(array $item): string
     {
-        return $this->accessor->getValue($item, '['.$this->uniquePropertyPath.']');
+        return $this->accessor->getValue($item, '['.$this->sourceUniquePropertyPath.']');
     }
 
     protected function setUniqueValue(object $entity, $value): void
