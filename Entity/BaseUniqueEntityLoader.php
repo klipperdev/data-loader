@@ -284,17 +284,17 @@ abstract class BaseUniqueEntityLoader implements DataLoaderInterface
                         break;
                     case ClassMetadataInfo::MANY_TO_MANY:
                         foreach ($item[$associationName] as $child) {
-                            if (!isset($child['criteria']['name'])) {
-                                throw new InvalidArgumentException(sprintf('The "name" criteria is required for the "%s" association', $associationName));
+                            if (!isset($child['criteria'][$this->uniquePropertyPath])) {
+                                throw new InvalidArgumentException(sprintf('The "%s" criteria is required for the "%s" association', $this->uniquePropertyPath, $associationName));
                             }
-                            if (!isset($entities[$child['criteria']['name']]) && !isset($upsertEntities[$child['criteria']['name']])) {
-                                throw new RuntimeException(sprintf('The entity "%s" does not exist', $child['criteria']['name']));
+                            if (!isset($entities[$child['criteria'][$this->uniquePropertyPath]]) && !isset($upsertEntities[$child['criteria'][$this->uniquePropertyPath]])) {
+                                throw new RuntimeException(sprintf('The entity "%s" does not exist', $child['criteria'][$this->uniquePropertyPath]));
                             }
 
                             /** @var Collection $coll */
                             $coll = $this->accessor->getValue($entity, $associationName);
-                            $childEntity = $entities[$child['criteria']['name']]
-                                ?? $upsertEntities[$child['criteria']['name']];
+                            $childEntity = $entities[$child['criteria'][$this->uniquePropertyPath]]
+                                ?? $upsertEntities[$child['criteria'][$this->uniquePropertyPath]];
 
                             if (!$coll->contains($childEntity)) {
                                 $coll->add($childEntity);
