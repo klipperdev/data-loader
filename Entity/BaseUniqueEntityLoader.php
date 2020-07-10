@@ -251,7 +251,30 @@ abstract class BaseUniqueEntityLoader implements DataLoaderInterface
 
                 switch ($mapping['type']) {
                     case ClassMetadataInfo::ONE_TO_ONE:
-                        throw new InvalidArgumentException(sprintf('The one-to-one association "%s" is not supported', $associationName));
+                        $assoItem = $item[$associationName];
+                        $assoClass = $mapping['targetEntity'];
+                        $assoEntity = null;
+
+                        if (isset($assoItem['values'])) {
+                            $assoEntity = $this->accessor->getValue($entity, $associationName)
+                                ?? new $assoClass();
+
+                            foreach ($assoItem['values'] as $field => $value) {
+                                $this->accessor->setValue($assoEntity, $field, $value);
+                            }
+                        } elseif (!empty($assoItem['criteria'])) {
+                            $assoEntity = $this->domain->getObjectManager()->getRepository($assoClass)
+                                ->findOneBy($assoItem['criteria'])
+                            ;
+                        }
+
+                        if (null !== $assoEntity) {
+                            $this->accessor->setValue($entity, $associationName, $assoEntity);
+                        }
+
+                        if (!$newEntity) {
+                            $this->hasUpdatedEntities = true;
+                        }
 
                         break;
                     case ClassMetadataInfo::MANY_TO_ONE:

@@ -215,11 +215,13 @@ class UniqueEntityConfiguration implements ConfigurationInterface
         $children->arrayNode($associationName)
             ->beforeNormalization()
             ->ifTrue(static function ($v) {
-                return \is_string($v) || !isset($v['criteria']);
+                return \is_string($v) || !isset($v['criteria']) || !isset($v['values']);
             })
             ->then(static function ($v) {
                 if (\is_string($v)) {
                     $v = [$this->uniquePropertyPath => $v];
+                } elseif (isset($v['values']) && \is_array($v['values'])) {
+                    return ['values' => $v['values']];
                 }
 
                 return ['criteria' => $v];
@@ -227,6 +229,11 @@ class UniqueEntityConfiguration implements ConfigurationInterface
             ->end()
             ->children()
             ->arrayNode('criteria')
+            ->useAttributeAsKey('field')
+            ->normalizeKeys(false)
+            ->variablePrototype()->end()
+            ->end()
+            ->arrayNode('values')
             ->useAttributeAsKey('field')
             ->normalizeKeys(false)
             ->variablePrototype()->end()
