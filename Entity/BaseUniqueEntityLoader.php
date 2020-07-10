@@ -199,12 +199,18 @@ abstract class BaseUniqueEntityLoader implements DataLoaderInterface
         /** @var BaseTranslation[] $translations */
         $translations = [];
         $edited = false;
+        $optionalFields = $item['@optionalFields'] ?? [];
 
         foreach ($this->metadata->getFieldNames() as $fieldName) {
             if (\array_key_exists($fieldName, $item)) {
                 $type = $this->metadata->getTypeOfField($fieldName);
                 $value = $this->accessor->getValue($entity, $fieldName);
                 $itemValue = $item[$fieldName];
+
+                // Skip optional field with existing entity field with a value
+                if (\in_array($fieldName, $optionalFields, true) && !empty($value)) {
+                    continue;
+                }
 
                 switch ($type) {
                     case Types::DATETIME_MUTABLE:
@@ -258,8 +264,16 @@ abstract class BaseUniqueEntityLoader implements DataLoaderInterface
                         if (isset($assoItem['values'])) {
                             $assoEntity = $this->accessor->getValue($entity, $associationName)
                                 ?? new $assoClass();
+                            $assoOptionalFields = $assoItem['values']['@optionalFields'] ?? [];
+                            unset($assoItem['values']['@optionalFields']);
 
                             foreach ($assoItem['values'] as $field => $value) {
+                                $existingAssoValue = $this->accessor->getValue($assoEntity, $field);
+
+                                if (\in_array($field, $assoOptionalFields, true) && !empty($existingAssoValue)) {
+                                    continue;
+                                }
+
                                 $this->accessor->setValue($assoEntity, $field, $value);
                             }
                         } elseif (!empty($assoItem['criteria'])) {

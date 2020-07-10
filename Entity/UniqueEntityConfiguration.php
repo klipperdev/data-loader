@@ -14,6 +14,7 @@ namespace Klipper\Component\DataLoader\Entity;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping\ClassMetadataInfo;
 use Doctrine\Persistence\Mapping\ClassMetadata;
+use Klipper\Component\DataLoader\Util\DataLoaderConfigUtil;
 use Klipper\Component\DoctrineExtensionsExtra\Model\Traits\TranslatableInterface;
 use Klipper\Component\Resource\Domain\DomainInterface;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
@@ -50,7 +51,16 @@ class UniqueEntityConfiguration implements ConfigurationInterface
         $children = $rootNode
             ->requiresAtLeastOneElement()
             ->prototype('array')
+            ->beforeNormalization()
+            ->ifArray()
+            ->then(static function ($v) {
+                return DataLoaderConfigUtil::findOptionalFields($v);
+            })
+            ->end()
             ->children()
+            ->arrayNode('@optionalFields')
+            ->scalarPrototype()->end()
+            ->end()
         ;
 
         foreach ($this->metadata->getFieldNames() as $fieldName) {
