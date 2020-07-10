@@ -61,17 +61,19 @@ abstract class BaseUniqueEntityLoader implements DataLoaderInterface
     protected bool $hasUpdatedEntities = false;
 
     /**
-     * @param DomainInterface                $domain             The resource domain of entity
-     * @param string                         $uniquePropertyPath The property path of unique property
-     * @param null|UniqueEntityConfiguration $config             The configuration
-     * @param Processor                      $processor          The processor
-     * @param string                         $defaultLocale      The default locale
-     * @param null|PropertyAccessor          $accessor           The property accessor
+     * @param DomainInterface                $domain                       The resource domain of entity
+     * @param string                         $uniquePropertyPath           The property path of unique property
+     * @param null|string                    $sourceUniquePropertyPath     The property path of source unique property, if null, the unique property path is used
+     * @param null|QueryBuilder              $existingEntitiesQueryBuilder The custom query builder to retrieve the existing entities
+     * @param null|UniqueEntityConfiguration $config                       The configuration
+     * @param Processor                      $processor                    The processor
+     * @param string                         $defaultLocale                The default locale
+     * @param null|PropertyAccessor          $accessor                     The property accessor
      */
     public function __construct(
         DomainInterface $domain,
         string $uniquePropertyPath,
-        string $sourceUniquePropertyPath,
+        ?string $sourceUniquePropertyPath = null,
         ?QueryBuilder $existingEntitiesQueryBuilder = null,
         UniqueEntityConfiguration $config = null,
         Processor $processor = null,
@@ -80,7 +82,7 @@ abstract class BaseUniqueEntityLoader implements DataLoaderInterface
     ) {
         $this->domain = $domain;
         $this->uniquePropertyPath = $uniquePropertyPath;
-        $this->sourceUniquePropertyPath = $sourceUniquePropertyPath;
+        $this->sourceUniquePropertyPath = $sourceUniquePropertyPath ?? '['.$uniquePropertyPath.']';
         $this->existingEntitiesQueryBuilder = $existingEntitiesQueryBuilder;
         $this->metadata = $domain->getObjectManager()->getClassMetadata($domain->getClass());
         $this->config = $config ?? new UniqueEntityConfiguration($domain, $this->uniquePropertyPath);
@@ -380,7 +382,7 @@ abstract class BaseUniqueEntityLoader implements DataLoaderInterface
 
     protected function getSourceUniqueValue(array $item): string
     {
-        return $this->accessor->getValue($item, '['.$this->sourceUniquePropertyPath.']');
+        return $this->accessor->getValue($item, $this->sourceUniquePropertyPath);
     }
 
     protected function setUniqueValue(object $entity, $value): void

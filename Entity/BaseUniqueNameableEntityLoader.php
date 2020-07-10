@@ -35,6 +35,6 @@ abstract class BaseUniqueNameableEntityLoader extends BaseUniqueEntityLoader
             throw new InvalidArgumentException(sprintf('The "%s" class must implemented "%s"', $this->domain->getClass(), NameableInterface::class));
         }
 
-        parent::__construct($domain, 'name', 'name', $existingEntitiesQueryBuilder, $config, $processor, $defaultLocale, $accessor);
+        parent::__construct($domain, 'name', null, $existingEntitiesQueryBuilder, $config, $processor, $defaultLocale, $accessor);
     }
 }
