@@ -28,14 +28,17 @@ class UniqueEntityConfiguration implements ConfigurationInterface
 {
     protected DomainInterface $domain;
 
+    protected string $uniquePropertyPath;
+
     /**
      * @var ClassMetadata|ClassMetadataInfo
      */
     protected ClassMetadata $metadata;
 
-    public function __construct(DomainInterface $domain)
+    public function __construct(DomainInterface $domain, string $uniquePropertyPath)
     {
         $this->domain = $domain;
+        $this->uniquePropertyPath = $uniquePropertyPath;
         $this->metadata = $domain->getObjectManager()->getClassMetadata($domain->getClass());
     }
 
@@ -184,7 +187,7 @@ class UniqueEntityConfiguration implements ConfigurationInterface
             })
             ->then(static function ($v) {
                 if (\is_string($v)) {
-                    $v = ['name' => $v];
+                    $v = [$this->uniquePropertyPath => $v];
                 }
 
                 return ['criteria' => $v];
@@ -216,7 +219,7 @@ class UniqueEntityConfiguration implements ConfigurationInterface
             })
             ->then(static function ($v) {
                 if (\is_string($v)) {
-                    $v = ['name' => $v];
+                    $v = [$this->uniquePropertyPath => $v];
                 }
 
                 return ['criteria' => $v];

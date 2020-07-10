@@ -78,7 +78,7 @@ abstract class BaseUniqueEntityLoader implements DataLoaderInterface
         $this->uniquePropertyPath = $uniquePropertyPath;
         $this->existingEntitiesQueryBuilder = $existingEntitiesQueryBuilder;
         $this->metadata = $domain->getObjectManager()->getClassMetadata($domain->getClass());
-        $this->config = $config ?? new UniqueEntityConfiguration($domain);
+        $this->config = $config ?? new UniqueEntityConfiguration($domain, $this->uniquePropertyPath);
         $this->processor = $processor ?? new Processor();
         $this->defaultLocale = $defaultLocale;
         $this->accessor = $accessor ?? PropertyAccess::createPropertyAccessor();
