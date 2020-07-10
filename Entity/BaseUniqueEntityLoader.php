@@ -19,6 +19,7 @@ use Doctrine\Persistence\Mapping\ClassMetadata;
 use Klipper\Component\DataLoader\DataLoaderInterface;
 use Klipper\Component\DataLoader\Exception\InvalidArgumentException;
 use Klipper\Component\DataLoader\Exception\RuntimeException;
+use Klipper\Component\DoctrineExtensions\Util\SqlFilterUtil;
 use Klipper\Component\DoctrineExtensionsExtra\Model\BaseTranslation;
 use Klipper\Component\DoctrineExtensionsExtra\Model\Traits\TranslatableInterface;
 use Klipper\Component\Resource\Domain\DomainInterface;
@@ -132,11 +133,14 @@ abstract class BaseUniqueEntityLoader implements DataLoaderInterface
      */
     protected function doLoad(array $items): ResourceListInterface
     {
+        $filters = SqlFilterUtil::disableFilters($this->domain->getObjectManager(), [], true);
         $list = $this->getExistingEntities($items);
+
         /** @var object[] $entities */
         $entities = [];
         /** @var object[] $upsertEntities */
         $upsertEntities = [];
+        $res = new ResourceList();
 
         foreach ($list as $entity) {
             $entities[$this->getUniqueValue($entity)] = $entity;
@@ -148,10 +152,12 @@ abstract class BaseUniqueEntityLoader implements DataLoaderInterface
 
         // upsert entities
         if (\count($upsertEntities) > 0) {
-            return $this->domain->upserts($upsertEntities, true);
+            $res = $this->domain->upserts($upsertEntities, true);
         }
 
-        return new ResourceList();
+        SqlFilterUtil::enableFilters($this->domain->getObjectManager(), $filters);
+
+        return $res;
     }
 
     /**
