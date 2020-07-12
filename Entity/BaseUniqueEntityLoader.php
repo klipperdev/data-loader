@@ -19,6 +19,7 @@ use Doctrine\Persistence\Mapping\ClassMetadata;
 use Klipper\Component\DataLoader\DataLoaderInterface;
 use Klipper\Component\DataLoader\Exception\InvalidArgumentException;
 use Klipper\Component\DataLoader\Exception\RuntimeException;
+use Klipper\Component\DataLoader\Util\DataLoaderTranslationUtil;
 use Klipper\Component\DoctrineExtensions\Util\SqlFilterUtil;
 use Klipper\Component\DoctrineExtensionsExtra\Model\BaseTranslation;
 use Klipper\Component\DoctrineExtensionsExtra\Model\Traits\TranslatableInterface;
@@ -251,10 +252,7 @@ abstract class BaseUniqueEntityLoader implements DataLoaderInterface
 
         if ($this->isTranslatable()) {
             /** @var TranslatableInterface $entity */
-            foreach ($entity->getTranslations() as $translation) {
-                /* @var BaseTranslation $translation */
-                $translations[$translation->getLocale().':'.$translation->getField()] = $translation;
-            }
+            $translations = DataLoaderTranslationUtil::getTranslationsMap($entity);
         }
 
         foreach ($this->metadata->getAssociationNames() as $associationName) {
@@ -303,29 +301,12 @@ abstract class BaseUniqueEntityLoader implements DataLoaderInterface
                         break;
                     case ClassMetadataInfo::ONE_TO_MANY:
                         if ('translations' === $associationName && $this->isTranslatable()) {
-                            $transClass = $mapping['targetEntity'];
-
-                            foreach ($item[$associationName] as $transLocale => $transItem) {
-                                foreach ($transItem as $transField => $transValue) {
-                                    $id = $transLocale.':'.$transField;
-
-                                    if (!isset($translations[$id])) {
-                                        $edited = true;
-                                        /** @var BaseTranslation $transEntity */
-                                        $transEntity = new $transClass($transLocale, $transField, $transValue);
-                                        $transEntity->setObject($entity);
-                                        $entity->getTranslations()->add($transEntity);
-                                        $availables = $entity->getAvailableLocales();
-                                        $availables[] = $transLocale;
-                                        $availables = array_unique($availables);
-                                        sort($availables);
-                                        $entity->setAvailableLocales($availables);
-                                    } elseif ($translations[$id]->getContent() !== $transValue) {
-                                        $edited = true;
-                                        $translations[$id]->setContent($transValue);
-                                    }
-                                }
-                            }
+                            $edited = DataLoaderTranslationUtil::injectTranslations(
+                                $entity,
+                                $mapping['targetEntity'],
+                                $item[$associationName],
+                                $translations
+                            ) || $edited;
                         } else {
                             throw new InvalidArgumentException(sprintf('The one-to-many association "%s" is not supported', $associationName));
                         }
