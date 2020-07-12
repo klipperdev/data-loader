@@ -196,7 +196,7 @@ class UniqueEntityConfiguration implements ConfigurationInterface
             ->ifTrue(static function ($v) {
                 return \is_string($v) || !isset($v['criteria']);
             })
-            ->then(static function ($v) {
+            ->then(function ($v) {
                 if (\is_string($v)) {
                     $v = [$this->uniquePropertyPath => $v];
                 }
