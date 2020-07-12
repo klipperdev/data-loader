@@ -265,6 +265,10 @@ abstract class BaseUniqueEntityLoader implements DataLoaderInterface
                         $assoClass = $mapping['targetEntity'];
                         $assoEntity = null;
 
+                        if (isset($assoItem['reference']) && is_a($assoItem['reference'], $assoClass)) {
+                            $assoEntity = $assoItem['reference'];
+                        }
+
                         if (isset($assoItem['values'])) {
                             $assoEntity = $this->accessor->getValue($entity, $associationName)
                                 ?? new $assoClass();
@@ -296,7 +300,17 @@ abstract class BaseUniqueEntityLoader implements DataLoaderInterface
 
                         break;
                     case ClassMetadataInfo::MANY_TO_ONE:
-                        throw new InvalidArgumentException(sprintf('The many-to-one association "%s" is not supported', $associationName));
+                        $assoItem = $item[$associationName];
+
+                        if (isset($assoItem['reference'])) {
+                            $assoEntity = $assoItem['reference'];
+
+                            if (!is_a($assoEntity, $mapping['targetEntity'])) {
+                                throw new InvalidArgumentException(sprintf('The many-to-one association "%s" is not supported without an object target instance in reference', $associationName));
+                            }
+
+                            $this->accessor->setValue($entity, $associationName, $assoEntity);
+                        }
 
                         break;
                     case ClassMetadataInfo::ONE_TO_MANY:

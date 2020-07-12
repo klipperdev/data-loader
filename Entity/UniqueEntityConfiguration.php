@@ -249,6 +249,7 @@ class UniqueEntityConfiguration implements ConfigurationInterface
             ->normalizeKeys(false)
             ->variablePrototype()->end()
             ->end()
+            ->variableNode('reference')->defaultNull()->end()
             ->end()
             ->end()
         ;
