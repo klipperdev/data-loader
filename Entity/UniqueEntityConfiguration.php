@@ -49,7 +49,6 @@ class UniqueEntityConfiguration implements ConfigurationInterface
         /** @var ArrayNodeDefinition $rootNode */
         $rootNode = $treeBuilder->getRootNode();
         $children = $rootNode
-            ->requiresAtLeastOneElement()
             ->arrayPrototype()
             ->beforeNormalization()
             ->ifArray()
