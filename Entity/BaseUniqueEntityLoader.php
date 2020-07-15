@@ -57,6 +57,8 @@ abstract class BaseUniqueEntityLoader implements DataLoaderInterface
 
     protected PropertyAccessor $accessor;
 
+    protected bool $autoCommit = false;
+
     protected bool $hasNewEntities = false;
 
     protected bool $hasUpdatedEntities = false;
@@ -123,6 +125,18 @@ abstract class BaseUniqueEntityLoader implements DataLoaderInterface
         return $this;
     }
 
+    public function setAutoCommit(bool $autoCommit): self
+    {
+        $this->autoCommit = $autoCommit;
+
+        return $this;
+    }
+
+    public function isAutoCommit(): bool
+    {
+        return $this->autoCommit;
+    }
+
     /**
      * Create a new instance of entity.
      *
@@ -159,7 +173,7 @@ abstract class BaseUniqueEntityLoader implements DataLoaderInterface
 
         // upsert entities
         if (\count($upsertEntities) > 0) {
-            $res = $this->domain->upserts($upsertEntities, true);
+            $res = $this->domain->upserts($upsertEntities, $this->autoCommit);
         }
 
         SqlFilterUtil::enableFilters($this->domain->getObjectManager(), $filters);
