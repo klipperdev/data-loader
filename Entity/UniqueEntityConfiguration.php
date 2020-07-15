@@ -252,6 +252,8 @@ class UniqueEntityConfiguration implements ConfigurationInterface
                     $v = [$this->uniquePropertyPath => $v];
                 } elseif (isset($v['values']) && \is_array($v['values'])) {
                     return ['values' => $v['values']];
+                } elseif (isset($v['reference']) && \is_object($v['reference'])) {
+                    return ['reference' => $v['reference']];
                 }
 
                 return ['criteria' => $v];
