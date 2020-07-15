@@ -50,7 +50,7 @@ class UniqueEntityConfiguration implements ConfigurationInterface
         $rootNode = $treeBuilder->getRootNode();
         $children = $rootNode
             ->requiresAtLeastOneElement()
-            ->prototype('array')
+            ->arrayPrototype()
             ->beforeNormalization()
             ->ifArray()
             ->then(static function ($v) {
@@ -161,10 +161,10 @@ class UniqueEntityConfiguration implements ConfigurationInterface
                     $children->arrayNode($associationName)
                         ->useAttributeAsKey('locale')
                         ->normalizeKeys(false)
-                        ->prototype('array')
+                        ->arrayPrototype()
                         ->useAttributeAsKey('field')
                         ->normalizeKeys(false)
-                        ->prototype('scalar')->end()
+                        ->scalarPrototype()->end()
                         ->end()
                         ->end()
                     ;
@@ -191,7 +191,7 @@ class UniqueEntityConfiguration implements ConfigurationInterface
     private function addAssociationCriteriaList(NodeBuilder $children, $associationName): void
     {
         $children->arrayNode($associationName)
-            ->prototype('array')
+            ->arrayPrototype()
             ->beforeNormalization()
             ->ifTrue(static function ($v) {
                 return \is_string($v) || !isset($v['criteria']);
