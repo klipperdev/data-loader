@@ -125,6 +125,9 @@ class UniqueEntityConfiguration implements ConfigurationInterface
             case Types::DATE_IMMUTABLE:
             case Types::TIME_MUTABLE:
             case Types::TIME_IMMUTABLE:
+                $children->variableNode($fieldName)->end();
+
+                break;
             case Types::OBJECT:
             case Types::STRING:
             case Types::TEXT:

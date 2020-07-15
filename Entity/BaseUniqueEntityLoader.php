@@ -228,7 +228,9 @@ abstract class BaseUniqueEntityLoader implements DataLoaderInterface
                     case Types::DATE_IMMUTABLE:
                     case Types::TIME_MUTABLE:
                     case Types::TIME_IMMUTABLE:
-                        $itemValue = null !== $itemValue ? new \DateTime($itemValue) : $itemValue;
+                        $itemValue = null !== $itemValue && !$itemValue instanceof \DateTimeInterface
+                            ? new \DateTime($itemValue)
+                            : $itemValue;
 
                         if ($itemValue instanceof \DateTime) {
                             $this->accessor->setValue($entity, $fieldName, $itemValue);
