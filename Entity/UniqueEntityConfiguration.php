@@ -96,13 +96,29 @@ class UniqueEntityConfiguration implements ConfigurationInterface
                 break;
             case Types::FLOAT:
             case Types::DECIMAL:
-                $children->floatNode($fieldName)->end();
+                $children->scalarNode($fieldName)
+                    ->validate()
+                    ->ifTrue(static function ($v) {
+                        return null !== $v && !\is_float($v);
+                    })
+                    ->thenInvalid('The value must be a float')
+                    ->end()
+                    ->end()
+                ;
 
                 break;
             case Types::BIGINT:
             case Types::SMALLINT:
             case Types::INTEGER:
-                $children->integerNode($fieldName)->end();
+                $children->scalarNode($fieldName)
+                    ->validate()
+                    ->ifTrue(static function ($v) {
+                        return null !== $v && !\is_int($v);
+                    })
+                    ->thenInvalid('The value must be an integer')
+                    ->end()
+                    ->end()
+                ;
 
                 break;
             case Types::ARRAY:
