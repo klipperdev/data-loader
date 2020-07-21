@@ -252,7 +252,7 @@ abstract class BaseUniqueEntityLoader implements DataLoaderInterface
 
                         break;
                     default:
-                        if (!empty($itemValue) && $value !== $itemValue) {
+                        if ($value !== $itemValue) {
                             $this->accessor->setValue($entity, $fieldName, $itemValue);
                             $edited = true;
 
