@@ -321,7 +321,7 @@ abstract class BaseUniqueEntityLoader implements DataLoaderInterface
                         if (isset($assoItem['reference'])) {
                             $assoEntity = $assoItem['reference'];
 
-                            if (!is_a($assoEntity, $mapping['targetEntity'])) {
+                            if (null !== $assoEntity && !is_a($assoEntity, $mapping['targetEntity'])) {
                                 throw new InvalidArgumentException(sprintf('The many-to-one association "%s" is not supported without an object target instance in reference', $associationName));
                             }
 
