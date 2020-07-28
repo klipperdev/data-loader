@@ -154,7 +154,8 @@ abstract class BaseUniqueEntityLoader implements DataLoaderInterface
      */
     protected function doLoad(array $items): ResourceListInterface
     {
-        $filters = SqlFilterUtil::disableFilters($this->domain->getObjectManager(), [], true);
+        $em = $this->domain->getObjectManager();
+        $filters = SqlFilterUtil::disableFilters($em, [], true);
         $list = $this->getExistingEntities($items);
 
         /** @var object[] $entities */
@@ -176,7 +177,11 @@ abstract class BaseUniqueEntityLoader implements DataLoaderInterface
             $res = $this->domain->upserts($upsertEntities, $this->autoCommit);
         }
 
-        SqlFilterUtil::enableFilters($this->domain->getObjectManager(), $filters);
+        foreach ($list as $item) {
+            $em->detach($item);
+        }
+
+        SqlFilterUtil::enableFilters($em, $filters);
 
         return $res;
     }
