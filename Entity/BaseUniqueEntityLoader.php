@@ -226,12 +226,17 @@ abstract class BaseUniqueEntityLoader implements DataLoaderInterface
         $translations = [];
         $edited = false;
         $optionalFields = $item['@optionalFields'] ?? [];
+        $excludedFields = ['availableLocales'];
 
         foreach ($this->metadata->getFieldNames() as $fieldName) {
             if (\array_key_exists($fieldName, $item)) {
                 $type = $this->metadata->getTypeOfField($fieldName);
                 $value = $this->accessor->getValue($entity, $fieldName);
                 $itemValue = $item[$fieldName];
+
+                if (\in_array($fieldName, $excludedFields, true)) {
+                    continue;
+                }
 
                 // Skip optional field with existing entity field with a value
                 if (\in_array($fieldName, $optionalFields, true) && !empty($value)) {
