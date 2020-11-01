@@ -16,9 +16,9 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping\ClassMetadataInfo;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\Mapping\ClassMetadata;
-use Klipper\Component\DataLoader\DataLoaderInterface;
 use Klipper\Component\DataLoader\Exception\InvalidArgumentException;
 use Klipper\Component\DataLoader\Exception\RuntimeException;
+use Klipper\Component\DataLoader\StateableDataLoaderInterface;
 use Klipper\Component\DataLoader\Util\DataLoaderTranslationUtil;
 use Klipper\Component\DoctrineExtensions\Util\SqlFilterUtil;
 use Klipper\Component\DoctrineExtensionsExtra\Model\BaseTranslation;
@@ -34,7 +34,7 @@ use Symfony\Component\PropertyAccess\PropertyAccessor;
 /**
  * @author François Pluchino <francois.pluchino@klipper.dev>
  */
-abstract class BaseUniqueEntityLoader implements DataLoaderInterface
+abstract class BaseUniqueEntityLoader implements StateableDataLoaderInterface
 {
     protected DomainInterface $domain;
 
@@ -102,20 +102,19 @@ abstract class BaseUniqueEntityLoader implements DataLoaderInterface
         return $this->doLoad($items);
     }
 
-    /**
-     * Check if the new entities are loaded.
-     */
-    public function hasNewEntities(): bool
+    public function hasNewValues(): bool
     {
         return $this->hasNewEntities;
     }
 
-    /**
-     * Check if the entities are updated.
-     */
-    public function hasUpdatedEntities(): bool
+    public function hasUpdatedValues(): bool
     {
         return $this->hasUpdatedEntities;
+    }
+
+    public function isEdited(): bool
+    {
+        return $this->hasNewEntities || $this->hasUpdatedEntities;
     }
 
     public function setDefaultLocale(string $defaultLocale): self
