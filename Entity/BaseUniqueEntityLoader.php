@@ -260,6 +260,7 @@ abstract class BaseUniqueEntityLoader implements StateableDataLoaderInterface
                         }
 
                         break;
+
                     default:
                         if ($value !== $itemValue) {
                             $this->accessor->setValue($entity, $fieldName, $itemValue);
@@ -324,6 +325,7 @@ abstract class BaseUniqueEntityLoader implements StateableDataLoaderInterface
                         }
 
                         break;
+
                     case ClassMetadataInfo::MANY_TO_ONE:
                         $assoItem = $item[$associationName];
 
@@ -338,6 +340,7 @@ abstract class BaseUniqueEntityLoader implements StateableDataLoaderInterface
                         }
 
                         break;
+
                     case ClassMetadataInfo::ONE_TO_MANY:
                         if ('translations' === $associationName && $this->isTranslatable()) {
                             $edited = DataLoaderTranslationUtil::injectTranslations(
@@ -351,6 +354,7 @@ abstract class BaseUniqueEntityLoader implements StateableDataLoaderInterface
                         }
 
                         break;
+
                     case ClassMetadataInfo::MANY_TO_MANY:
                         foreach ($item[$associationName] as $child) {
                             if (!isset($child['criteria'][$this->uniquePropertyPath])) {
@@ -376,6 +380,7 @@ abstract class BaseUniqueEntityLoader implements StateableDataLoaderInterface
                         }
 
                         break;
+
                     default:
                         break;
                 }

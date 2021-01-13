@@ -93,6 +93,7 @@ class UniqueEntityConfiguration implements ConfigurationInterface
                 $children->booleanNode($fieldName)->end();
 
                 break;
+
             case Types::FLOAT:
             case Types::DECIMAL:
                 $children->scalarNode($fieldName)
@@ -106,6 +107,7 @@ class UniqueEntityConfiguration implements ConfigurationInterface
                 ;
 
                 break;
+
             case Types::BIGINT:
             case Types::SMALLINT:
             case Types::INTEGER:
@@ -120,6 +122,7 @@ class UniqueEntityConfiguration implements ConfigurationInterface
                 ;
 
                 break;
+
             case Types::ARRAY:
             case Types::SIMPLE_ARRAY:
             case Types::JSON_ARRAY:
@@ -132,6 +135,7 @@ class UniqueEntityConfiguration implements ConfigurationInterface
                 ;
 
                 break;
+
             case Types::DATETIME_MUTABLE:
             case Types::DATETIME_IMMUTABLE:
             case Types::DATETIMETZ_MUTABLE:
@@ -143,6 +147,7 @@ class UniqueEntityConfiguration implements ConfigurationInterface
                 $children->variableNode($fieldName)->end();
 
                 break;
+
             case Types::OBJECT:
             case Types::STRING:
             case Types::TEXT:
@@ -174,6 +179,7 @@ class UniqueEntityConfiguration implements ConfigurationInterface
                 $this->addAssociationCriteria($children, $associationName);
 
                 break;
+
             case ClassMetadataInfo::ONE_TO_MANY:
                 if ('translations' === $associationName && $this->isTranslatable()) {
                     $children->arrayNode($associationName)
@@ -191,10 +197,12 @@ class UniqueEntityConfiguration implements ConfigurationInterface
                 }
 
                 break;
+
             case ClassMetadataInfo::MANY_TO_MANY:
                 $this->addAssociationCriteriaList($children, $associationName);
 
                 break;
+
             default:
                 break;
         }
