@@ -66,6 +66,7 @@ class DataLoaderTranslationUtil
 
                 if (!isset($translations[$id])) {
                     $edited = true;
+
                     /** @var BaseTranslation $transEntity */
                     $transEntity = new $translationEntityClass($transLocale, $transField, $transValue);
                     $transEntity->setObject($entity);

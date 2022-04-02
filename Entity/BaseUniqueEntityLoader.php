@@ -159,6 +159,7 @@ abstract class BaseUniqueEntityLoader implements StateableDataLoaderInterface
 
         /** @var object[] $entities */
         $entities = [];
+
         /** @var object[] $upsertEntities */
         $upsertEntities = [];
         $res = new ResourceList();
